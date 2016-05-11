@@ -1,0 +1,81 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Apr 14, 2016, 8:56:44 AM
+    Author     : michaelrodgers
+*/
+.dt { 
+    font-family: Tahoma, Verdana, sans-serif;
+    font-size: 12px;
+}
+.hover-text-color {
+    color: blue;
+    cursor: pointer;
+}
+.row-select-hightlight{
+    background-color: blue !important;
+    color: white;
+    font-weight: bold;
+}
+.dt-filter-id { 
+    font-size: 12px;
+}
+.dt-filter-txt {
+    color: lightgray;
+    font-style: italic; 
+}
+.dt-filter-clear{ 
+    font-size: 12px;
+}
+.hidden-row {
+    display: none;
+}
+table.dt {
+    width: 99%;
+}
+table.dt-header{    
+    width: 99%;
+}
+table.dt-header thead tr th {
+    vertical-align: bottom;
+    text-align: left; 
+}
+.dt-inner-div {
+    border: 1px solid black;
+    height: 200px !important;
+    overflow-y: scroll;
+}
+.dt-sort-icon-bg {  
+    vertical-align: middle;
+    padding-right: 20px;
+    height: 10px;
+    background: url('img/bg.gif') no-repeat center;
+} 
+.dt-sort-icon-asc {  
+    vertical-align: middle;
+    padding-right: 20px;
+    height: 10px;
+    background: url('img/asc.gif') no-repeat center;
+}
+.dt-sort-icon-desc {  
+    vertical-align: middle;
+    padding-right: 20px;
+    height: 10px;
+    background: url('img/desc.gif') no-repeat center;
+}
+table.dt thead th {
+    vertical-align: bottom;
+    text-align: left;
+}
+table.dt tr:nth-child(even) {
+    background-color: #f0f0f0;
+}
+table.dt tr:nth-child(odd) {
+    background-color: white;
+}
+table.dt tbody tr:hover{
+    background-color: #a6e1ec;
+}
