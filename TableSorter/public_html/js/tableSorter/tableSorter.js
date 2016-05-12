@@ -431,7 +431,7 @@ function TableSorter() {
 
         for (var item in elementArray) {
             var tempDiv = document.createElement('table');
-            tempDiv.innerHTML = elementArray[item];
+            $(tempDiv).html(elementArray[item]);
             var col = $(tempDiv).find("tbody tr td:nth-child(" + index + ")");
 
             var text = $(col).html();
@@ -471,7 +471,7 @@ function TableSorter() {
         var endingArray = new Array();
         for (var it in initArray) {
             var tempDiv = document.createElement("div");
-            tempDiv.innerHTML = initArray[it];
+            $(tempDiv).html(initArray[it]);
             var rowElement = $(tempDiv).find("table > tbody");
             endingArray[it] = rowElement[0].innerHTML;
         }
@@ -512,7 +512,7 @@ function TableSorter() {
         var tblArray = new Array();
         for (var item in elementArray) {
             var tempDiv = document.createElement('table');
-            tempDiv.innerHTML = elementArray[item];
+            $(tempDiv).html(elementArray[item]);
             tblArray[item] = tempDiv;
         }
         return tblArray;
