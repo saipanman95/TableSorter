@@ -25,7 +25,6 @@ function TableSorter() {
                 }
             }
         }];
-
     /**
      * Method initializes table sort/filter data in local storage and adds new tableData based on existence in JSON object.
      * @param {type} tableId
@@ -88,7 +87,6 @@ function TableSorter() {
             lsInstance.setItem("ls", JSON.stringify(children));
         }
     };
-
     /**
      * Method called to initialize, decorate, and enhance current html table
      * @param {type} tableId - this is the actual tableId; do not add the # to 
@@ -99,48 +97,41 @@ function TableSorter() {
 
         self.initLocalStorage(tableId);
         $("head").append("<link rel='stylesheet' id='extracss' href='js/tableSorter/tableSorter.css' type='text/css' />");
-
         $("#" + tableId).on('click', 'tr', function () {
             var text = $(this).children('td.dt-sort-id').text();
-            self.highlightRow(text, tableId);
+            self.highlightRow($.trim(text), tableId);
             self.updateLsClickPoint("recordClicked", text, tableId);
         });
         $("#" + tableId).wrapAll("<div id='dt-inner-div-" + tableId + "' class='dt dt-inner-div'/>");
         $('#dt-inner-div-' + tableId).wrapAll("<div id='dt-table-wrapper-div-" + tableId + "' class='dt dt-table-wrapper-div'/>");
         $('#dt-table-wrapper-div-' + tableId).prepend("<table id='dt-header-" + tableId + "' class='dt dt-header'><thead id='dt-header-" + tableId + "'></thead></table>");
         $('#dt-table-wrapper-div-' + tableId).wrapAll("<div id='dt-outer-div-" + tableId + "' class='dt dt-outer-div'/>");
-        $('#dt-outer-div-' + tableId).before("<label for='dt-filter-id-" + tableId + "' class='dt dt-filter-id'>Filter List: </label><input id='dt-filter-id-" + tableId + "' type='text' class='dt dt-filter'/>");
+        $('#dt-outer-div-' + tableId).before("<label for='dt-filter-id-" + tableId + "' class='dt dt-filter-id'>Filter List: </label> <input id='dt-filter-id-" + tableId + "' type='text' class='dt dt-filter'/>");
         $('#dt-outer-div-' + tableId).before("<span style='padding-left: 15px;' class='dt dt-filter-txt' id='dt-filter-txt-" + tableId + "'>...</span> ");
-        $('#dt-outer-div-' + tableId).before("<a href='#' class='dt dt-filter-clear' id='dt-filter-clear-" + tableId + "' title='Clear Filter/Sort Criteria'>Clear</a>")
+        $('#dt-outer-div-' + tableId).before("<br/><a href='#' class='dt dt-filter-clear' id='dt-filter-clear-" + tableId + "' title='Clear Filter/Sort Criteria'>Clear</a>")
 
         self.decorateHeaders('table#' + tableId, "#dt-header-" + tableId);
-
         $('#dt-header-' + tableId + ' tr th').click(function () {
             self.updateLocalStorage('refreshed', 'false', tableId);
             self.sortColumn(this, tableId);
-        });
-
-        $('#dt-filter-clear-' + tableId).click(function () {
-            self.removeItemFromLocalStorage(tableId);
-        });
-
-        self.calculateCellItems(tableId);
-
-        $("#dt-filter-id-" + tableId).keyup(function () {
-            var txt = $(this).val();
-            if (txt.length > 0) {
-                $('#dt-filter-txt-' + tableId).text(txt);
-                self.filterRows(txt, tableId);
-            } else {
-                $('#dt-filter-txt-' + tableId).text('...');
-                self.filterRows(txt, tableId);
-            }
             self.calculateCellItems(tableId);
         });
+        
+        $('#dt-filter-clear-' + tableId).click(function () {
+            self.removeItemFromLocalStorage(tableId);
+            self.refreshDataPoint(tableId);
+        });
+        self.calculateCellItems(tableId);
 
+        var $rows = $('#' + tableId + ' tbody tr');
+        $('#dt-filter-id-' + tableId).keyup(function () {
+            var filterText = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase().split(' ');
+            $('#dt-filter-txt-' + tableId).text(filterText);
+            self.filter(filterText, $rows, tableId);
+            self.calculateCellItems(tableId);
+        });
         self.refreshDataPoint(tableId);
     };
-
     /**
      * Method remove local data on sort and filter form local storage
      * @param {type} tableId
@@ -148,9 +139,7 @@ function TableSorter() {
      */
     this.removeItemFromLocalStorage = function (tableId) {
         var lsInstance = self.getLocalStorage();
-
         var thisLs = JSON.parse(lsInstance.getItem("ls"));
-
         for (var i = 0; i < thisLs.length; i++) {
             for (var l in thisLs[i]) {
                 if (thisLs[i][l].key === tableId) {
@@ -158,7 +147,7 @@ function TableSorter() {
                 }
             }
         }
-        lsInstance.setItem("ls", JSON.stringify(thisLs)); 
+        lsInstance.setItem("ls", JSON.stringify(thisLs));
     };
     /**
      * Method called when browser is refreshed or page reloaded. Used primarily for reloading local storage data of previous sort/filter criteria
@@ -168,29 +157,26 @@ function TableSorter() {
     this.refreshDataPoint = function (tableId) {
         var colNum = this.getLsItem('columnClicked', tableId);
         this.updateLocalStorage('refreshed', true, tableId);
-
-
         var cn = Number(colNum) + 1;
         var col = $('#dt-header-' + tableId + ' tr th:nth-child(' + cn + ')');
-        this.sortColumn(col[0], tableId);
+        self.sortColumn(col[0], tableId);
         var filterText = this.getLsItem('filterText', tableId);
-        var recordClicked = self.getLsItem('recordOptions.recordClicked', tableId);
-
+        var recordClicked = $.trim(self.getLsItem('recordOptions.recordClicked', tableId));
         $("#dt-filter-id-" + tableId).val(filterText);
         $('#dt-filter-txt-' + tableId).text(filterText);
-        self.filterRows(filterText, tableId);
+        var $rows = $('#' + tableId + ' tbody tr');
+        self.filter(filterText, $rows, tableId);
         if (recordClicked) {
             self.highlightRow(recordClicked, tableId);
             $(window).load(function () {
                 self.scrollToRecord(recordClicked, tableId);
             });
         }
+        self.calculateCellItems(tableId);
     };
-
     this.updateLsClickPoint = function (key, value, tableId) {
         var lsInstance = self.getLocalStorage();
         var thisLs = JSON.parse(lsInstance.getItem("ls"));
-
         for (var i = 0; i < thisLs.length; i++) {
             for (var l in thisLs[i]) {
                 if (thisLs[i][l].key === tableId) {
@@ -199,25 +185,31 @@ function TableSorter() {
                 }
             }
         }
-        lsInstance.setItem("ls", JSON.stringify(thisLs)); 
-
+        lsInstance.setItem("ls", JSON.stringify(thisLs));
     };
-
     this.highlightRow = function (rowId, tableId) {
         $("#" + tableId + " tr").removeClass('row-select-hightlight');
         $("#" + tableId).find("td[dt-sort-id='" + rowId + "']").parent('tr').addClass('row-select-hightlight');
         self.captureLocation(rowId, tableId);
     };
-
     this.captureLocation = function (rowId, tableId) {
         var row = $("#" + tableId).find("td[dt-sort-id='" + rowId + "']").parent('tr').position();
-        self.updateLsClickPoint('recordPosition', row.top, tableId);
-
+        if ($.isEmptyObject(row) === false) {
+            self.updateLsClickPoint('recordPosition', row.top, tableId);
+        }
     };
-
     this.scrollToRecord = function (rowId, tableId) {
+        $('#dt-inner-div-' + tableId).scrollTop(1);
+        var doAgain = false;
         var windowOffset = $('#dt-inner-div-' + tableId).position();
         var row = $("#" + tableId).find("td[dt-sort-id='" + rowId + "']").position();
+        if ($.isEmptyObject(row)) {
+            return;
+        }
+        if (row.top < 0) {
+            doAgain = true;
+        }
+
         var offsetPos;
         var pos = row.top - windowOffset.top;
         if (pos > 100) {
@@ -226,12 +218,13 @@ function TableSorter() {
             offsetPos = pos;
         }
         $('#dt-inner-div-' + tableId).scrollTop(offsetPos);
+        if (doAgain) {
+            self.scrollToRecord(rowId, tableId);
+        }
     };
-
     this.updateLocalStorage = function (key, value, tableId) {
         var lsInstance = self.getLocalStorage();
         var thisLs = JSON.parse(lsInstance.getItem("ls"));
-
         for (var i = 0; i < thisLs.length; i++) {
             for (var l in thisLs[i]) {
                 if (thisLs[i][l].key === tableId) {
@@ -240,14 +233,12 @@ function TableSorter() {
                 }
             }
         }
-        lsInstance.setItem("ls", JSON.stringify(thisLs)); 
+        lsInstance.setItem("ls", JSON.stringify(thisLs));
     };
-
     this.getLsItem = function (key, tableId) {
         var lsInstance = self.getLocalStorage();
         var thisLs = JSON.parse(lsInstance.getItem("ls"));
         var returnVal = "";
-
         if (key.indexOf('recordOptions') > -1) {
             var keys = key.split(".");
             if (keys.length > 1) {
@@ -277,7 +268,6 @@ function TableSorter() {
     this.getLocalStorage = function () {
         return localStorage;
     };
-
     /**
      * Method decorates headers and makes table scrollable
      * @param {type} tableHeaderIdentifier
@@ -287,9 +277,7 @@ function TableSorter() {
     this.decorateHeaders = function (tableHeaderIdentifier, dtheader) {
 
         $(tableHeaderIdentifier + " thead tr th").append("<span class='dt-sort-icon-bg'> </span>");
-
         $(dtheader).html($(tableHeaderIdentifier + " thead").html());
-
         $(dtheader + " tr th").hover(function () {
             $(this).addClass('hover-text-color');
         }, function () {
@@ -297,7 +285,6 @@ function TableSorter() {
         });
         $(tableHeaderIdentifier + " thead").html("");
     };
-
     this.calculateCellItems = function (tableId) {
         var rows = $('#' + tableId + ' tbody tr');
         var singleRow;
@@ -308,6 +295,7 @@ function TableSorter() {
                 var className = rows[r].className;
                 if (className.indexOf("hidden-row") === -1) {
                     singleRow = rows[r];
+                    break; //only need first row
                     //console.log("did not find hidden-row");
                 }
             }
@@ -323,40 +311,23 @@ function TableSorter() {
         for (var t in ths) {
             if (!isNaN(t)) {
                 $(ths[t]).width(tdWidthArr[t]);
+                $(ths[t]).css('textAlign', 'left');
             }
         }
     };
 
-    /**
-     * Method engages filter of table rows based on filter text entry
-     * @param {type} filterText
-     * @param {type} tableId
-     * @returns {undefined}
-     */
-    this.filterRows = function (filterText, tableId) {
-        var rowArray = this.convertRowsToArray('table#' + tableId + ' > tbody > tr');
-        var thisNewArray = this.createTempTables(rowArray);
-        var newArray = new Array();
-        for (var tbl in thisNewArray) {
-            var thisTbl = thisNewArray[tbl];
-            var tds = $(thisTbl).find("td");
-            var rawRowTxt = "";
-            for (var i = 0; i < tds.length; i++) {
-                var td = tds[i];
-                rawRowTxt = rawRowTxt + td.innerHTML;
-            }
-            if (rawRowTxt.toLowerCase().indexOf(filterText.toLowerCase()) === -1) {
-                $(thisTbl).find("tr").addClass('hidden-row');
-            } else {
-                $(thisTbl).find("tr").removeClass('hidden-row');
-            }
-            newArray[tbl] = thisTbl.outerHTML;
-        }
+    this.filter = function (filterText, $rows, tableId) {
+        $rows.hide().filter(function () {
+            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+            var matchesSearch = true;
+            $(filterText).each(function (index, value) {
+                matchesSearch = (!matchesSearch) ? false : ~text.indexOf(value);
+            });
+            return matchesSearch;
+        }).show();
+        self.calculateCellItems(tableId);
 
-        var finalArray = this.transformTblRows(newArray);
-
-        this.rebuildTable("table#" + tableId + " tbody", finalArray);
-        this.updateLocalStorage("filterText", filterText, tableId);
+        self.updateLocalStorage("filterText", filterText, tableId);
     };
 
     /**
@@ -385,8 +356,6 @@ function TableSorter() {
             return 'asc';
         }
     };
-
-
     /**
      * Method used to accuate sorting based on column selected
      * @param {type} object
@@ -395,92 +364,36 @@ function TableSorter() {
      */
     this.sortColumn = function (object, tableId) {
 
-        var rowArray = this.convertRowsToArray('table#' + tableId + ' > tbody > tr');
-
-        var newArray = this.sortAscDesc(rowArray, object, tableId);
-
-        var finalArray = this.transformTblRows(newArray);
-
-        this.rebuildTable('table#' + tableId + ' > tbody', finalArray);
-        this.updateLocalStorage("columnClicked", object.cellIndex, tableId);
-    };
-
-    /**
-     * Utility Method used to conver html table data into array, which is used 
-     * and makes easier to sort data
-     * @param {type} identifier
-     * @returns {Array}
-     */
-    this.convertRowsToArray = function (identifier) {
-        var arr = new Array();
-        $(identifier).each(function (index) {
-            arr[index] = this.outerHTML;
-        });
-        return arr;
-    };
-
-    /**
-     * Utility method that tags the first td element with sorting data
-     * @param {type} elementArray
-     * @param {type} column
-     * @returns {Array}
-     */
-    this.tagElements = function (elementArray, column) {
-        var index = column + 1;
-        var tempArray = new Array();
-
-        for (var item in elementArray) {
-            var tempDiv = document.createElement('table');
-            $(tempDiv).html(elementArray[item]);
-            var col = $(tempDiv).find("tbody tr td:nth-child(" + index + ")");
-
-            var text = $(col).html();
-            $(tempDiv).attr("data-sort-value", this.transformNumber(text));
-            $(tempDiv).find("tr").attr("data-sort-value", this.transformNumber(text));
-            tempArray[item] = tempDiv.outerHTML;
-        }
-
-        return tempArray;
-    };
-
-    /**
-     * Utility method used by decorate headers method for determining the 
-     * directionality of sorting arrows up or down for asc or desc.
-     * @param {type} arr
-     * @param {type} obj
-     * @param {type} tableId
-     * @returns {unresolved}
-     */
-    this.sortAscDesc = function (arr, obj, tableId) {
-        var thisNewArray = self.tagElements(arr, obj.cellIndex);
-        var objArray = null;
+        var $tbody = $('#' + tableId + ' tbody');
         if (self.trackColumnSort(tableId) === 'asc') {
-            objArray = thisNewArray.sort();
-            $(obj).parent().find('span').addClass('dt-sort-icon-bg').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc');
-            $(obj).find('span').addClass('dt-sort-icon-asc').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-bg');
+            $tbody.find('tr').sort(function (a, b) {
+                var tda = self.transformNumber($(a).find('td:eq(' + object.cellIndex + ')').text());
+                var tdb = self.transformNumber($(b).find('td:eq(' + object.cellIndex + ')').text());
+                // if a < b return 1
+                return tda > tdb ? 1
+                        // else if a > b return -1
+                        : tda < tdb ? -1
+                        // else they are equal - return 0    
+                        : 0;
+            }).appendTo($tbody);
+            $(object).parent().find('span').addClass('dt-sort-icon-bg').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc');
+            $(object).find('span').addClass('dt-sort-icon-asc').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-bg');
         } else {//if (self.trackColumnSort() === 'desc'){
-            objArray = thisNewArray.sort();
-            objArray = thisNewArray.reverse();
-            $(obj).parent().find('span').addClass('dt-sort-icon-bg').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc');
-            $(obj).find('span').addClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc').removeClass('dt-sort-icon-bg');
-        }
-        return objArray;
-    };
-
-    this.transformTblRows = function (initArray) {
-        var endingArray = new Array();
-        for (var it in initArray) {
-            var tempDiv = document.createElement("div");
-            $(tempDiv).html(initArray[it]);
-            var rowElement = $(tempDiv).find("table > tbody");
-            endingArray[it] = rowElement[0].innerHTML;
-        }
-        return endingArray;
-    };
-
-    this.rebuildTable = function (tableIdentifier, rowsArray) {
-        var combindedRows = rowsArray.join(" ");
-        $(tableIdentifier).html(combindedRows);
+            $tbody.find('tr').sort(function (a, b) {
+                var tda = self.transformNumber($(a).find('td:eq(' + object.cellIndex + ')').text());
+                var tdb = self.transformNumber($(b).find('td:eq(' + object.cellIndex + ')').text());
+                // if a < b return 1
+                return tda < tdb ? 1
+                        // else if a > b return -1
+                        : tda > tdb ? -1
+                        // else they are equal - return 0    
+                        : 0;
+            }).appendTo($tbody);
+            $(object).parent().find('span').addClass('dt-sort-icon-bg').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc');
+            $(object).find('span').addClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc').removeClass('dt-sort-icon-bg');
+        } 
+        
+        this.updateLocalStorage("columnClicked", object.cellIndex, tableId);
     };
 
     /**
@@ -506,19 +419,7 @@ function TableSorter() {
             }
         }
         return text;
-    };
-
-    this.createTempTables = function (elementArray) {
-        var tblArray = new Array();
-        for (var item in elementArray) {
-            var tempDiv = document.createElement('table');
-            $(tempDiv).html(elementArray[item]);
-            tblArray[item] = tempDiv;
-        }
-        return tblArray;
-
-    };
-
+    }; 
     /**
      * Utility method used to determin if JSON object exist or not.
      * @param {type} obj - Obj could be anthing but in this usage is for JSON objects.
@@ -531,7 +432,6 @@ function TableSorter() {
             return true;
         }
     };
-
     /**
      * Utility method that check both textual value of true and false as well 
      * as boolean values. This is because of the wierd response the browser takes

@@ -41,7 +41,7 @@ table.dt-header{
 }
 table.dt-header thead tr th {
     vertical-align: bottom;
-    text-align: left; 
+    text-align: left !important; 
 }
 .dt-inner-div {
     border: 1px solid black;
