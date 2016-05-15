@@ -131,6 +131,12 @@ function TableSorter() {
             self.calculateCellItems(tableId);
         });
         self.refreshDataPoint(tableId);
+        $('table tbody tr:even:not(:first)').addClass('stripped-row');
+        $('table tbody tr').not(':first').hover( function(){
+           $(this).addClass('hover-row-class'); 
+        }, function(){
+            $(this).removeClass('hover-row-class');
+        });
     };
     /**
      * Method remove local data on sort and filter form local storage
@@ -299,6 +305,10 @@ function TableSorter() {
                     //console.log("did not find hidden-row");
                 }
             }
+        }
+        
+        if($.isEmptyObject(singleRow)){
+            return;
         }
         var cells = singleRow.cells;
         var tdWidthArr = new Array();
