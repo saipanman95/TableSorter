@@ -13,11 +13,19 @@
         <script src="js/tableSorter/tableSorter.js"></script> 
         <script src="js/vendor/jquery/jquery.js"></script>
         <script> 
+            
+            var ts = new TableSorter();
             $(document).ready(function () {
                 var ts = new TableSorter();
-                ts.init('myTable');
-                
+                ts.init('myTable', true, function(){testMyCallBack('10')},10);                
             });
+            
+            //simulates calling page reload
+            function testMyCallBack(val){
+                alert('myval = ' + val);
+                ts.updateLsClickPoint("recordClicked", Number(val), 'myTable')
+                location.reload();
+            }
         
         </script>
     </head>
