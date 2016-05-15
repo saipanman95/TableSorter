@@ -93,7 +93,7 @@ function TableSorter() {
      * the id; the code will provide it automatically
      * @returns {void}
      */
-    this.init = function (tableId) {
+    this.init = function (tableId, useCallBack, callback, recordId) {
 
         self.initLocalStorage(tableId);
         $("head").append("<link rel='stylesheet' id='extracss' href='js/tableSorter/tableSorter.css' type='text/css' />");
@@ -119,7 +119,7 @@ function TableSorter() {
         
         $('#dt-filter-clear-' + tableId).click(function () {
             self.removeItemFromLocalStorage(tableId);
-            self.refreshDataPoint(tableId);
+            self.refreshDataPoint(tableId, useCallBack, callback, recordId);
         });
         self.calculateCellItems(tableId);
 
@@ -130,7 +130,7 @@ function TableSorter() {
             self.filter(filterText, $rows, tableId);
             self.calculateCellItems(tableId);
         });
-        self.refreshDataPoint(tableId);
+        self.refreshDataPoint(tableId, useCallBack, callback, recordId);
         $('table tbody tr:even:not(:first)').addClass('stripped-row');
         $('table tbody tr').not(':first').hover( function(){
            $(this).addClass('hover-row-class'); 
@@ -158,9 +158,12 @@ function TableSorter() {
     /**
      * Method called when browser is refreshed or page reloaded. Used primarily for reloading local storage data of previous sort/filter criteria
      * @param {type} tableId
+     * @param {boolean} useCallBack
+     * @param {function} callback
+     * @param {id} recordId
      * @returns {undefined}
      */
-    this.refreshDataPoint = function (tableId) {
+    this.refreshDataPoint = function (tableId, useCallBack, callback, recordId ) {
         var colNum = this.getLsItem('columnClicked', tableId);
         this.updateLocalStorage('refreshed', true, tableId);
         var cn = Number(colNum) + 1;
@@ -172,7 +175,13 @@ function TableSorter() {
         $('#dt-filter-txt-' + tableId).text(filterText);
         var $rows = $('#' + tableId + ' tbody tr');
         self.filter(filterText, $rows, tableId);
-        if (recordClicked) {
+        
+        if($.isEmptyObject(recordClicked)){
+            
+        } else  {
+            if(useCallBack){
+                self.evalCurrentRecord(recordId, tableId, callback);
+            }
             self.highlightRow(recordClicked, tableId);
             $(window).load(function () {
                 self.scrollToRecord(recordClicked, tableId);
@@ -180,6 +189,30 @@ function TableSorter() {
         }
         self.calculateCellItems(tableId);
     };
+    
+    /**
+     * Method is intended to be used to invoke callback function wrapped in function(){ .... }.
+     * @param {type} recordId
+     * @param {type} tableId
+     * @param {type} callback - to be used like so: function(){ loadThisRecordUrl(url, transId, user);}
+     * @returns {boolean} - will return true or false
+     */
+    this.evalCurrentRecord = function(recordId, tableId, callback){
+        var recordClicked = self.getLsItem('recordOptions.recordClicked', tableId);
+        if($.isEmptyObject(recordClicked)){
+            callback();
+            return false;
+        } else {
+            if (Number(recordClicked) !== Number(recordId)){
+                callback();
+                return false;
+            } else {
+                self.updateLsClickPoint("recordClicked", recordId, tableId);
+            }
+        }
+        return true;
+    };
+    
     this.updateLsClickPoint = function (key, value, tableId) {
         var lsInstance = self.getLocalStorage();
         var thisLs = JSON.parse(lsInstance.getItem("ls"));
