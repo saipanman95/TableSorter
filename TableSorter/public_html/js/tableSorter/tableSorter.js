@@ -167,7 +167,7 @@ function TableSorter() {
         var col = $('#dt-header-' + tableId + ' tr th:nth-child(' + cn + ')');
         self.sortColumn(col[0], tableId);
         var filterText = this.getLsItem('filterText', tableId);
-        var recordClicked = $.trim(self.getLsItem('recordOptions.recordClicked', tableId));
+        var recordClicked = self.getLsItem('recordOptions.recordClicked', tableId);
         $("#dt-filter-id-" + tableId).val(filterText);
         $('#dt-filter-txt-' + tableId).text(filterText);
         var $rows = $('#' + tableId + ' tbody tr');
@@ -258,7 +258,7 @@ function TableSorter() {
                     }
                 }
             }
-            return returnVal;
+            return $.trim(returnVal);
         }
         for (var i = 0; i < thisLs.length; i++) {
             for (var l in thisLs[i]) {
@@ -268,7 +268,7 @@ function TableSorter() {
                 }
             }
         }
-        return returnVal;
+        return $.trim(returnVal);
     }
 
     this.getLocalStorage = function () {
