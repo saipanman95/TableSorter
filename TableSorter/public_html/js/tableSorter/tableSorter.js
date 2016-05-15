@@ -108,7 +108,7 @@ function TableSorter() {
         $('#dt-table-wrapper-div-' + tableId).wrapAll("<div id='dt-outer-div-" + tableId + "' class='dt dt-outer-div'/>");
         $('#dt-outer-div-' + tableId).before("<label for='dt-filter-id-" + tableId + "' class='dt dt-filter-id'>Filter List: </label> <input id='dt-filter-id-" + tableId + "' type='text' class='dt dt-filter'/>");
         $('#dt-outer-div-' + tableId).before("<span style='padding-left: 15px;' class='dt dt-filter-txt' id='dt-filter-txt-" + tableId + "'>...</span> ");
-        $('#dt-outer-div-' + tableId).before("<br/><a href='#' class='dt dt-filter-clear' id='dt-filter-clear-" + tableId + "' title='Clear Filter/Sort Criteria'>Clear</a>")
+        $('#dt-outer-div-' + tableId).before("<br/><a href='#' class='dt dt-filter-clear' id='dt-filter-clear-" + tableId + "' title='Clear Filter/Sort Criteria'>Clear</a>");
 
         self.decorateHeaders('table#' + tableId, "#dt-header-" + tableId);
         $('#dt-header-' + tableId + ' tr th').click(function () {
@@ -269,7 +269,7 @@ function TableSorter() {
             }
         }
         return $.trim(returnVal);
-    }
+    };
 
     this.getLocalStorage = function () {
         return localStorage;
