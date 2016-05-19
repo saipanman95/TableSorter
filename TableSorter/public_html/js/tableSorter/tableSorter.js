@@ -174,7 +174,8 @@ function TableSorter() {
         $("#dt-filter-id-" + tableId).val(filterText);
         $('#dt-filter-txt-' + tableId).text(filterText);
         var $rows = $('#' + tableId + ' tbody tr');
-        self.filter(filterText, $rows, tableId);
+        //triggering keyup action to invoke filter
+        $('#dt-filter-id-' + tableId).keyup();
         
         if($.isEmptyObject(recordClicked)){
             
