@@ -278,6 +278,10 @@ function TableSorter() {
     this.getLsItem = function (key, tableId) {
         var lsInstance = self.getLocalStorage();
         var thisLs = JSON.parse(lsInstance.getItem("ls"));
+        //only breaking out of logic if nothing exists yet;
+        if($.isEmptyObject(thisLs)){
+            return;
+        }
         var returnVal = "";
         if (key.indexOf('recordOptions') > -1) {
             var keys = key.split(".");
