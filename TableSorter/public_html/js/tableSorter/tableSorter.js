@@ -321,8 +321,8 @@ function TableSorter() {
     this.decorateHeaders = function (tableHeaderIdentifier, dtheader) {
 
         $(tableHeaderIdentifier + " thead tr th").append("<span class='dt-sort-icon-bg'> </span>");
-        $(dtheader).html($(tableHeaderIdentifier + " thead").html());
-        $(dtheader + " tr th").hover(function () {
+        $(dtheader + " thead").html($(tableHeaderIdentifier + " thead").html());
+        $(dtheader + " thead tr th").hover(function () {
             $(this).addClass('hover-text-color');
         }, function () {
             $(this).removeClass('hover-text-color');
@@ -344,15 +344,18 @@ function TableSorter() {
                 }
             }
         }
-        
-        if($.isEmptyObject(singleRow)){
+
+        if ($.isEmptyObject(singleRow)) {
             return;
         }
         var cells = singleRow.cells;
         var tdWidthArr = new Array();
         for (var c in cells) {
             if (!isNaN(c)) {
-                tdWidthArr[c] = $(cells[c]).width();
+                //tdWidthArr[c] = $(cells[c]).width();
+                var w = Math.ceil($(cells[c])[0].getBoundingClientRect().width);
+                tdWidthArr[c] = w;
+                //console.log($(cells[c]).id + " = " + $(cells[c]).width() + " vs " + w);
             }
         }
         var ths = $("#dt-header-" + tableId + " tr")[0].cells;
@@ -404,7 +407,7 @@ function TableSorter() {
             return 'asc';
         }
     };
-    /**
+   /**
      * Method used to accuate sorting based on column selected
      * @param {type} object
      * @param {type} tableId
@@ -412,15 +415,18 @@ function TableSorter() {
      */
     this.sortColumn = function (object, tableId) {
 
+        if($.isEmptyObject(object)){
+            return;
+        }
         var $tbody = $('#' + tableId + ' tbody');
         if (self.trackColumnSort(tableId) === 'asc') {
             $tbody.find('tr').sort(function (a, b) {
                 var tda = self.transformNumber($(a).find('td:eq(' + object.cellIndex + ')').text());
                 var tdb = self.transformNumber($(b).find('td:eq(' + object.cellIndex + ')').text());
                 // if a < b return 1
-                return tda > tdb ? 1
+                return (tda).toLowerCase() > (tdb).toLowerCase() ? 1
                         // else if a > b return -1
-                        : tda < tdb ? -1
+                        : (tda).toLowerCase() < (tdb).toLowerCase() ? -1
                         // else they are equal - return 0    
                         : 0;
             }).appendTo($tbody);
@@ -431,16 +437,16 @@ function TableSorter() {
                 var tda = self.transformNumber($(a).find('td:eq(' + object.cellIndex + ')').text());
                 var tdb = self.transformNumber($(b).find('td:eq(' + object.cellIndex + ')').text());
                 // if a < b return 1
-                return tda < tdb ? 1
+                return (tda).toLowerCase() < (tdb).toLowerCase() ? 1
                         // else if a > b return -1
-                        : tda > tdb ? -1
+                        : (tda).toLowerCase() > (tdb).toLowerCase() ? -1
                         // else they are equal - return 0    
                         : 0;
             }).appendTo($tbody);
             $(object).parent().find('span').addClass('dt-sort-icon-bg').removeClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc');
             $(object).find('span').addClass('dt-sort-icon-desc').removeClass('dt-sort-icon-asc').removeClass('dt-sort-icon-bg');
-        } 
-        
+        }
+
         this.updateLocalStorage("columnClicked", object.cellIndex, tableId);
     };
 
